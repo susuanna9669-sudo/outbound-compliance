@@ -290,6 +290,18 @@ def download_freq_block():
 def download_other_block():
     items = ANALYSIS_CACHE.get('other_block', [])
     if not items: return jsonify({'error':'请先分析'}),400
+
+@app.route('/api/analyze_get')
+def analyze_get():
+    import traceback
+    try:
+        ref_date = datetime.now()
+        s, cl, fb, ob = batch_check_all(ref_date)
+        ANALYSIS_CACHE.update({'summary': s, 'compliant': cl, 'freq_block': fb, 'other_block': ob, 'ts': datetime.now().isoformat()})
+        PL = 300
+        return jsonify({'summary': s, 'compliant': cl[:PL], 'freq_block': fb[:PL], 'other_block': ob[:PL]})
+    except Exception as e:
+        return jsonify({'error': str(e), 'traceback': traceback.format_exc()}), 500
     h = ['序号','手机号','最新任务','归属地','屏蔽原因','历史状态','最后呼叫时间']
     k = ['phone','latest_task','region','block_reason','all_statuses','last_call_time']
     out = fast_excel(items, '其他屏蔽名单', h, k, '7f8c8d')
