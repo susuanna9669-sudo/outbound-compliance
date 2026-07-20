@@ -131,12 +131,17 @@ def get_stats():
 
 @app.route('/api/analyze', methods=['POST'])
 def analyze():
-    ref_date = datetime.now()
-    s, cl, fb, ob = batch_check_all(ref_date)
-    ANALYSIS_CACHE.update({'summary': s, 'compliant': cl, 'freq_block': fb, 'other_block': ob,
-                           'ts': datetime.now().isoformat()})
-    PL = 300
-    return jsonify({'summary': s, 'compliant': cl[:PL], 'freq_block': fb[:PL], 'other_block': ob[:PL]})
+    """分析所有号码，仅返回预览数据"""
+    import traceback
+    try:
+        ref_date = datetime.now()
+        s, cl, fb, ob = batch_check_all(ref_date)
+        ANALYSIS_CACHE.update({'summary': s, 'compliant': cl, 'freq_block': fb, 'other_block': ob,
+                               'ts': datetime.now().isoformat()})
+        PL = 300
+        return jsonify({'summary': s, 'compliant': cl[:PL], 'freq_block': fb[:PL], 'other_block': ob[:PL]})
+    except Exception as e:
+        return jsonify({'error': str(e), 'traceback': traceback.format_exc()}), 500
 
 @app.route('/api/import', methods=['POST'])
 def import_records():
